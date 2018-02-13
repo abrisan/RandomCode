@@ -34,6 +34,16 @@ void Map(std::vector<typename MapDescriptor::InitType> const &source,
     );
   }
 }
+
+template<typename MapDescriptor>
+void Map(std::vector<typename MapDescriptor::Type> &inout)
+{
+  for (auto &elem : inout)
+  {
+    MapDescriptor::TransformNoTypeConversion(elem);
+  }
+}
+
 /////// End Defn //////////
 
 /// Define Right Hand Folding ////
@@ -63,6 +73,13 @@ struct MapAddX
   typedef int InitType;
   typedef int DestType;
   static constexpr auto Transformation = [](int i){return i + X;};
+};
+
+template<int X>
+struct MapSimpleAdd
+{
+  typedef int Type;
+  static constexpr auto TransformNoTypeConversion = [](int &i){i = i + X;};
 };
 
 /* Add all the numbers in a vector, with X as the final value */
