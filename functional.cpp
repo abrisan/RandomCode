@@ -46,6 +46,23 @@ void Map(std::vector<typename MapDescriptor::Type> &inout)
 
 /////// End Defn //////////
 
+/* Daisy chaining operations */
+template<typename Operation>
+std::vector<typename Operation::FinalType> Execute(std::vector<typename Operation::InitType> const &vector)
+{
+  std::vector<typename Operation::FinalType> return_value;
+  Map<Operation>(vector, return_value);
+  return return_value;
+}
+
+template<typename FirstOperation, typename SecondOperation, typename... RestOperation>
+std::vector<typename FirstOperation::FinalType> Execute(std::vector<typename FirstOperation::InitType> const &vector)
+{
+  std::vector<typename FirstOperation::DestType> interim_value;
+  Map<FirstOperation>(vector, interim_value);
+  return Execute<SecondOperation, RestOperation...>(interim_value);
+}
+
 /// Define Right Hand Folding ////
 template<typename FoldrDescriptor>
 typename FoldrDescriptor::ReturnType FoldR(std::vector<typename FoldrDescriptor::SourceType> const &vec)
@@ -94,17 +111,45 @@ struct FoldrAdd
 
 /// End Examples ////
 
+
+/* Special Structs for daisy-chaining */
+struct AddOne
+{
+  typedef int InitType;
+  typedef int DestType;
+  typedef int FinalType;
+  static constexpr auto Transformation = [](int i) {return i+1;};
+};
+
+struct AddTwo
+{
+  typedef int InitType;
+  typedef int DestType;
+  typedef int FinalType;
+  static constexpr auto Transformation = [](int i){return i + 2;};
+};
+
 /// Example main ///
 int main()
 {
   std::vector<int> test_vector = {1, 2, 3};
   std::vector<int> dest_vector;
-  std::cout << test_vector << std::endl;
+  std::cout << "Initial Vector Is :\n";
+  std::cout << test_vector << std::endl << std::endl;
+  
+  std::cout << "Daisy Chaining AddOne and AddTwo gives :\n";
+  std::vector<int> daisy_chain = Execute<AddOne, AddTwo>(test_vector);
+  
+  std::cout << daisy_chain << std::endl << std::endl;
+  
+  
   Map<MapAddX<2>>(test_vector, dest_vector);
-
-  std::cout << dest_vector << std::endl;
-
+  
+  std::cout << "Mapping Addition of 2 gives :\n";
+  std::cout << dest_vector << std::endl << std::endl;
+  
+  std::cout << "Folding using sum and 0 base value gives :\n";
   int sum_value = FoldR<FoldrAdd<0>>(test_vector);
-  std::cout << sum_value << std::endl;
+  std::cout << sum_value << std::endl << std::endl;
 }
 /// End example main ///
