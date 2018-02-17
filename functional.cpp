@@ -85,18 +85,35 @@ typename FoldrDescriptor::ReturnType FoldR(std::vector<typename FoldrDescriptor:
 /// Define example structs (can support currying with primitive types) /////
 /* Example : Add x to a number */
 template<int X>
+int addX(int i)
+{
+  return i + X;
+}
+
+template<int X>
+void addXRef(int &i)
+{
+  i += X;
+}
+
+int addTwo(int current, int previous)
+{
+  return current + previous;
+}
+
+template<int X>
 struct MapAddX
 {
   typedef int InitType;
   typedef int DestType;
-  static constexpr auto Transformation = [](int i){return i + X;};
+  static constexpr auto Transformation = &addX<X>;
 };
 
 template<int X>
 struct MapSimpleAdd
 {
   typedef int Type;
-  static constexpr auto TransformNoTypeConversion = [](int &i){i = i + X;};
+  static constexpr auto TransformNoTypeConversion = &addXRef<X>;
 };
 
 /* Add all the numbers in a vector, with X as the final value */
@@ -106,7 +123,7 @@ struct FoldrAdd
   typedef int SourceType;
   typedef int ReturnType;
   static constexpr ReturnType FinalValue = Final;
-  static constexpr auto FoldFunction = [](int previous, int current){return previous + current;};
+  static constexpr auto FoldFunction = &addTwo;
 };
 
 /// End Examples ////
@@ -118,7 +135,7 @@ struct AddOne
   typedef int InitType;
   typedef int DestType;
   typedef int FinalType;
-  static constexpr auto Transformation = [](int i) {return i+1;};
+  static constexpr auto Transformation = &addX<1>;
 };
 
 struct AddTwo
@@ -126,7 +143,7 @@ struct AddTwo
   typedef int InitType;
   typedef int DestType;
   typedef int FinalType;
-  static constexpr auto Transformation = [](int i){return i + 2;};
+  static constexpr auto Transformation = &addX<2>;
 };
 
 /// Example main ///
